@@ -21,7 +21,7 @@ export const Products = () => {
         getProducts();
     }, []);
 
-    const getProducts = () => {
+    const getProducts = (): void => {
         setLoading(true);
         // @ts-ignore
         api.get("/products/")
@@ -35,6 +35,7 @@ export const Products = () => {
             .catch(() => toast.error("Failed to load products"))
             .finally(() => setLoading(false));
     };
+
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
