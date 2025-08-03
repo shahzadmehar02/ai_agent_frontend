@@ -1,13 +1,29 @@
-import { useState, useEffect } from "react";
-import { api } from "../Api.js";
+import { useState, useEffect, ChangeEvent } from "react";
+import { api } from "../Api";
 import { toast } from "react-hot-toast";
 import '../Products.css';
 
+interface ProductInput {
+    name: string;
+    price: number | string;
+}
+
+interface Product {
+    name: string;
+    price: number;
+}
+
+interface Invoice {
+    id: number;
+    customer: string;
+    products: Product[];
+}
+
 export const InvoiceManager = () => {
-    const [invoices, setInvoices] = useState([]);
-    const [customer, setCustomer] = useState("");
-    const [products, setProducts] = useState([{ name: "", price: "" }]);
-    const [editingInvoice, setEditingInvoice] = useState(null);
+    const [invoices, setInvoices] = useState<Invoice[]>([]);
+    const [customer, setCustomer] = useState<string>("");
+    const [products, setProducts] = useState<ProductInput[]>([{ name: "", price: "" }]);
+    const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
 
     useEffect(() => {
         fetchInvoices();
@@ -19,8 +35,9 @@ export const InvoiceManager = () => {
             .catch(() => toast.error("Failed to load invoices"));
     };
 
-    const handleProductChange = (index, field, value) => {
+    const handleProductChange = (index: number, field: keyof ProductInput, value: string | number) => {
         const updated = [...products];
+        // @ts-ignore
         updated[index][field] = value;
         setProducts(updated);
     };
@@ -29,7 +46,7 @@ export const InvoiceManager = () => {
         setProducts([...products, { name: "", price: "" }]);
     };
 
-    const handleEdit = (invoice) => {
+    const handleEdit = (invoice: Invoice) => {
         setCustomer(invoice.customer || "");
         setProducts(invoice.products.map(p => ({ name: p.name, price: p.price })));
         setEditingInvoice(invoice);
@@ -42,7 +59,10 @@ export const InvoiceManager = () => {
     };
 
     const createOrUpdateInvoice = () => {
-        const payload = { customer, products };
+        const payload = {
+            customer,
+            products: products.map(p => ({ name: p.name, price: Number(p.price) })),
+        };
 
         if (editingInvoice) {
             api.put(`/invoices/${editingInvoice.id}/`, payload)
@@ -63,7 +83,7 @@ export const InvoiceManager = () => {
         }
     };
 
-    const deleteInvoice = (id) => {
+    const deleteInvoice = (id: number) => {
         if (!window.confirm("Are you sure you want to delete this invoice?")) return;
 
         api.delete(`/invoices/${id}/`)
@@ -77,12 +97,14 @@ export const InvoiceManager = () => {
     return (
         <div className="min-h-screen bg-gray-100 p-6">
             <div className="max-w-4xl mx-auto space-y-8">
-                <h2 className="text-3xl font-bold text-blue-800 text-center">🧾 {editingInvoice ? "Edit Invoice" : "Create Invoice"}</h2>
+                <h2 className="text-3xl font-bold text-blue-800 text-center">
+                    🧾 {editingInvoice ? "Edit Invoice" : "Create Invoice"}
+                </h2>
 
                 <div className="bg-white p-6 rounded-xl shadow space-y-4">
                     <input
                         value={customer}
-                        onChange={(e) => setCustomer(e.target.value)}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => setCustomer(e.target.value)}
                         placeholder="Customer name"
                         className="text-gray-800 border border-gray-300 px-4 py-2 w-full rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
@@ -105,10 +127,7 @@ export const InvoiceManager = () => {
                         </div>
                     ))}
 
-                    <button
-                        onClick={addProduct}
-                        className="text-sm text-blue-600 hover:underline"
-                    >
+                    <button onClick={addProduct} className="text-sm text-blue-600 hover:underline">
                         + Add another product
                     </button>
 
@@ -129,7 +148,6 @@ export const InvoiceManager = () => {
                     )}
                 </div>
 
-                {/* Invoices list */}
                 <div>
                     <h3 className="text-2xl font-semibold text-blue-800 mb-4">📜 All Invoices</h3>
                     {invoices.length === 0 ? (
@@ -144,24 +162,17 @@ export const InvoiceManager = () => {
                                             <span>{inv.customer || "N/A"}</span>
                                         </div>
                                         <div className="flex gap-3 text-sm">
-                                            <button
-                                                onClick={() => handleEdit(inv)}
-                                                className="text-blue-600 hover:underline"
-                                            >
+                                            <button onClick={() => handleEdit(inv)} className="text-blue-600 hover:underline">
                                                 ✏️ Edit
                                             </button>
-                                            <button
-                                                onClick={() => deleteInvoice(inv.id)}
-                                                className="text-red-600 hover:underline"
-                                            >
+                                            <button onClick={() => deleteInvoice(inv.id)} className="text-red-600 hover:underline">
                                                 🗑️ Delete
                                             </button>
                                         </div>
-
                                     </div>
 
                                     <div className="flex items-center gap-2 text-blue-600 font-medium">
-                                        <span>🛒</span>
+                                        <span>🛍️</span>
                                         <span>Products:</span>
                                     </div>
 

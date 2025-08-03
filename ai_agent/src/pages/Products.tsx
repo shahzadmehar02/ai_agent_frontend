@@ -1,28 +1,31 @@
-import { useEffect, useState } from "react";
-import '../Products.css'
-import { api } from "../Api.js";
+import { useEffect, useState, FormEvent } from "react";
+import '../Products.css';
+import { api } from "../Api";
 import { toast, Toaster } from "react-hot-toast";
-import {ProductCard} from "../components/ProductsComponent.jsx";
+import { ProductCard } from "../components/ProductsComponent";
 
+interface Product {
+    id: string;
+    name: string;
+    price: number;
+}
 
 export const Products = () => {
-    const [products, setProducts] = useState([]);
-    const [name, setName] = useState("");
-    const [price, setPrice] = useState("");
-    const [editingProduct, setEditingProduct] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [name, setName] = useState<string>("");
+    const [price, setPrice] = useState<string>("");
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
         getProducts();
     }, []);
 
-    console.log("Backend API URL:", import.meta.env.VITE_API_URL);
-
     const getProducts = () => {
         setLoading(true);
+        // @ts-ignore
         api.get("/products/")
             .then((res) => {
-                console.log("API response:", res.data);
                 if (Array.isArray(res.data)) {
                     setProducts(res.data);
                 } else {
@@ -33,9 +36,9 @@ export const Products = () => {
             .finally(() => setLoading(false));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        const payload = { name, price };
+        const payload = { name, price: parseFloat(price) };
 
         if (editingProduct) {
             api.put(`/products/${editingProduct.id}/`, payload)
@@ -56,13 +59,13 @@ export const Products = () => {
         }
     };
 
-    const handleEdit = (product) => {
+    const handleEdit = (product: Product) => {
         setEditingProduct(product);
         setName(product.name);
-        setPrice(product.price);
+        setPrice(product.price.toString());
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = (id: string) => {
         if (confirm("Are you sure you want to delete this product?")) {
             api.delete(`/products/${id}/`)
                 .then(() => {
@@ -88,7 +91,6 @@ export const Products = () => {
                     <p className="text-gray-500 mt-1">Manage your products with ease</p>
                 </header>
 
-                {/* Form */}
                 <form
                     onSubmit={handleSubmit}
                     className="bg-white p-6 md:p-8 rounded-2xl shadow-lg space-y-6"
@@ -139,7 +141,6 @@ export const Products = () => {
                     </div>
                 </form>
 
-                {/* Product List */}
                 <section>
                     <h2 className="text-xl font-semibold mb-4 text-gray-800">📋 Product List</h2>
                     {loading ? (
@@ -162,5 +163,4 @@ export const Products = () => {
             </div>
         </div>
     );
-
 };
