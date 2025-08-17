@@ -2,7 +2,7 @@ import {Products} from "./pages/Products.tsx";
 import {Toaster} from 'react-hot-toast';
 import {BrowserRouter as Router, Routes, Route, Navigate} from "react-router-dom";
 import {InvoiceManager} from "./pages/Invoices.tsx";
-import {Sidebar} from "./components/Sidebar.jsx";
+import {Sidebar} from "./components/Sidebar.tsx";
 import {ChatBox} from "./components/ChatComponent.jsx";
 
 function App() {
